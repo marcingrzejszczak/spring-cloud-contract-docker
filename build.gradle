@@ -1,0 +1,88 @@
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+
+	dependencies {
+		// spring cloud contract
+		classpath "org.springframework.boot:spring-boot-gradle-plugin:${bootVersion}"
+		classpath "org.springframework.cloud:spring-cloud-contract-gradle-plugin:${findProperty('verifierVersion')}"
+	}
+}
+
+group = getProp("PROJECT_GROUP") ?: 'com.example'
+version = getProp("PROJECT_VERSION") ?: '0.0.1-SNAPSHOT'
+
+repositories {
+	mavenCentral()
+}
+
+// spring cloud contract
+apply plugin: 'groovy'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'spring-cloud-contract'
+apply plugin: 'maven-publish'
+
+// tests
+bootRepackage.enabled = false
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${bomVersion}"
+	}
+}
+
+dependencies {
+	testCompile("org.springframework.cloud:spring-cloud-stream-test-support")
+	testCompile("org.springframework.cloud:spring-cloud-starter-contract-verifier")
+}
+
+test {
+	testLogging {
+		exceptionFormat = 'full'
+		afterSuite { desc, result ->
+			if (!desc.parent) { // will match the outermost suite
+				println "Results: (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+				if (result.testCount == 0) {
+					throw new IllegalStateException("No tests were found. Failing the build")
+				}
+			}
+		}
+	}
+}
+
+// tests - contracts
+contracts {
+	baseClassForTests = "contracts.RestBase"
+	testMode = "EXPLICIT"
+	contractsDslDir = new File("/contracts")
+}
+
+task wrapper(type: Wrapper) {
+	gradleVersion = '4.3.1'
+}
+
+publishing {
+	repositories {
+		maven {
+			url getProp('REPO_WITH_BINARIES_URL') ?: 'http://localhost:8081/artifactory/libs-release-local'
+			credentials {
+				username getProp('REPO_WITH_BINARIES_USERNAME') ?: 'admin'
+				password getProp('REPO_WITH_BINARIES_PASSWORD') ?: 'password'
+			}
+		}
+	}
+	publications {
+		mavenJava(MavenPublication) {
+			artifactId getProp("PROJECT_NAME") ?: 'example'
+			from components.java
+		}
+	}
+}
+
+String getProp(String propName) {
+	return hasProperty(propName) ?
+			(getProperty(propName) ?: System.properties[propName]) : System.properties[propName] ?:
+			System.getenv(propName)
+}
