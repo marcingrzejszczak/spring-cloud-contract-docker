@@ -1,6 +1,11 @@
 buildscript {
 	repositories {
 		mavenCentral()
+		if (!"${bomVersion}".contains("RELEASE")) {
+			maven { url "http://repo.spring.io/snapshot" }
+			maven { url "http://repo.spring.io/milestone" }
+			maven { url "http://repo.spring.io/release" }
+		}
 	}
 
 	dependencies {
@@ -15,17 +20,22 @@ version = getProp("PROJECT_VERSION") ?: '0.0.1-SNAPSHOT'
 
 repositories {
 	mavenCentral()
+	if (!"${bomVersion}".contains("RELEASE")) {
+		maven { url "http://repo.spring.io/snapshot" }
+		maven { url "http://repo.spring.io/milestone" }
+		maven { url "http://repo.spring.io/release" }
+	}
 }
 
 // spring cloud contract
 apply plugin: 'groovy'
-apply plugin: 'org.springframework.boot'
+//apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'spring-cloud-contract'
 apply plugin: 'maven-publish'
 
 // tests
-bootRepackage.enabled = false
+//bootRepackage.enabled = false
 
 dependencyManagement {
 	imports {
@@ -81,8 +91,9 @@ publishing {
 	}
 }
 
-String publishArtifacts = getProp("PUBLISH_ARTIFACTS")
-publish.setEnabled(Boolean.parseBoolean(publishArtifacts) ?: false)
+String publishArtifacts = getProp("PUBLISH_ARTIFACTS") ?: "false"
+boolean publishEnabled = Boolean.parseBoolean(publishArtifacts)
+publish.setEnabled(publishEnabled)
 
 String getProp(String propName) {
 	return hasProperty(propName) ?

@@ -6,4 +6,4 @@ COPY . /spring-cloud-contract/
 WORKDIR /spring-cloud-contract/
 # Let's download all the deps
 RUN ./gradlew clean build || echo "That's expected. We just wanted to download the deps"
-CMD ["./gradlew", "clean", "build", "publish"]
+CMD ["./gradlew", "clean", "build", "publish", "--stacktrace"]
