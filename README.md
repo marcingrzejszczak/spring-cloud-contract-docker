@@ -24,8 +24,8 @@ Output available under `/spring-cloud-contract/build` folder.
 
 ### Test Env Vars
 
-- `APPLICATION_BASE_URL` - url against which tests should be executed. 
-Remember that it has to be accessible from the Docker container 
+- `APPLICATION_BASE_URL` - url against which tests should be executed.
+Remember that it has to be accessible from the Docker container
 - `APPLICATION_USERNAME` - optional username for basic authentication
 - `APPLICATION_PASSWORD` - optional password for basic authentication
 
@@ -51,7 +51,7 @@ Run the mongodb docker (in real life scenario you would just
 run the nodejs application with mocked services)
 
 ```bash
-$ ./gradlew startDBContainer
+$ ./run_mongo.sh
 ```
 
 Run the nodejs application (it will start on port `3000`)
@@ -63,11 +63,11 @@ $ node app
 Run the contract tests
 
 ```bash
-$ docker run -e "APPLICATION_BASE_URL=http://192.168.1.100:3000" -v `pwd`/src/test/resources/contracts/:/contracts -d spring-cloud-contract-docker:latest
+$ ./run_contract_tests.sh
 ```
 
 If you want to publish the stubs to e.g. Artifactory just execute
 
 ```bash
-$ docker run -e "APPLICATION_BASE_URL=http://192.168.1.100:3000" -e "PUBLISH_ARTIFACTS=true" -e "REPO_WITH_BINARIES_URL=http://your.ip.to.artifactory" -e "REPO_WITH_BINARIES_USERNAME=foo" -e "REPO_WITH_BINARIES_USERNAME=bar" -v `pwd`/src/test/resources/contracts/:/contracts -d spring-cloud-contract-docker:latest
-``` 
+$ docker run -e "APPLICATION_BASE_URL=http://`./whats_my_ip.sh`:3000" -e "PUBLISH_ARTIFACTS=true" -e "REPO_WITH_BINARIES_URL=http://your.ip.to.artifactory" -e "REPO_WITH_BINARIES_USERNAME=foo" -e "REPO_WITH_BINARIES_USERNAME=bar" -v `pwd`/contracts/:/contracts -d spring-cloud-contract-docker:latest
+```
