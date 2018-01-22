@@ -47,11 +47,15 @@ $ cd bookstore
 $ git checkout sc-contract
 ```
 
-Run the mongodb docker (in real life scenario you would just
-run the nodejs application with mocked services)
+IMPORTANT: For now, before you continue, you need to build the Docker image yourself. Just execute `docker build -t spring-cloud-contract-docker .`
+
+### Server side (nodejs)
+
+Run the infra (in real life scenario you would just
+run the nodejs application with mocked services). It will run mongodb and artifactory.
 
 ```bash
-$ ./run_mongo.sh
+$ ./setup_infra.sh
 ```
 
 Run the nodejs application (it will start on port `3000`)
@@ -60,14 +64,34 @@ Run the nodejs application (it will start on port `3000`)
 $ node app
 ```
 
-Run the contract tests
+Run the contract tests. Your contracts will be taken from `/contracts` folder. The output of the test execution is available under `node_modules/spring-cloud-contract/output`. The stubs will be uploaded to artifactory
 
 ```bash
 $ ./run_contract_tests.sh
 ```
 
-If you want to publish the stubs to e.g. Artifactory just execute
+### Client side (curl)
+
+Let's now imagine that you're the client side. It could be another node js application. In our case it will be simple `curl`. Let's start with running the `Stub Runner Boot` application. (Ultimately we will provide a JAR to run, for the sake of testing we will need to build that jar).
 
 ```bash
-$ docker run -e "APPLICATION_BASE_URL=http://`./whats_my_ip.sh`:3000" -e "PUBLISH_ARTIFACTS=true" -e "REPO_WITH_BINARIES_URL=http://your.ip.to.artifactory" -e "REPO_WITH_BINARIES_USERNAME=foo" -e "REPO_WITH_BINARIES_USERNAME=bar" -v `pwd`/contracts/:/contracts -d spring-cloud-contract-docker:latest
+$ ./run_stub_runner_boot.sh
+```
+
+What's happening is that a standalone Stub Runner application got started and it downloaded the stubs from Artifactory. The stubs are running at port `9876` (check the bash script for more info).
+
+Time to check our stateful stubs.
+
+```bash
+$ cd json
+# let's execute the first request (no response is returned)
+$ ./1_request.sh
+# Now time for the second request. Let's pipe it to jq if you have it to pretty print it
+$ ./2_request.sh | jq
+```
+
+## How to build it?
+
+```bash
+$ docker build -t spring-cloud-contract-docker .
 ```

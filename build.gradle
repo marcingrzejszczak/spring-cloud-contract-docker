@@ -73,7 +73,15 @@ task wrapper(type: Wrapper) {
 	gradleVersion = '4.4.1'
 }
 
+task cleanOutput(type: Delete) {
+	def dirName = "/spring-cloud-contract-output"
+  file(dirName).list().each {
+      f -> delete "${dirName}/${f}"
+  }
+}
+
 task copyOutput(type: Copy) {
+	dependsOn("cleanOutput")
 	from 'build'
 	into '/spring-cloud-contract-output'
 }
@@ -92,7 +100,6 @@ publishing {
 	}
 	publications {
 		mavenJava(MavenPublication) {
-			artifactId getProp("PROJECT_NAME") ?: 'example'
 			from components.java
 		}
 	}
