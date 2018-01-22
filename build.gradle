@@ -70,8 +70,15 @@ contracts {
 }
 
 task wrapper(type: Wrapper) {
-	gradleVersion = '4.3.1'
+	gradleVersion = '4.4.1'
 }
+
+task copyOutput(type: Copy) {
+	from 'build'
+	into '/spring-cloud-contract-output'
+}
+
+test.finalizedBy("copyOutput")
 
 publishing {
 	repositories {
