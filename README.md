@@ -45,6 +45,8 @@ Clone a nodejs application (in this case it has contracts defined)
 $ git clone https://github.com/marcingrzejszczak/bookstore/
 $ cd bookstore
 $ git checkout sc-contract
+$ git submodule init
+$ git submodule update
 ```
 
 IMPORTANT: For now, before you continue, you need to build the Docker image yourself. Just execute `docker build -t spring-cloud-contract-docker .`
